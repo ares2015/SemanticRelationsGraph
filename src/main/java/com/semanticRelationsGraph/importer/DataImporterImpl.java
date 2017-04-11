@@ -5,8 +5,6 @@ import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
-import org.neo4j.io.fs.FileUtils;
-import org.neo4j.unsafe.impl.batchimport.input.csv.Data;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,10 +40,15 @@ public class DataImporterImpl implements DataImporter {
             Node myNode = findNode();
 
             Iterable<Relationship> relationships = myNode.getRelationships();
+            Label label2 = Label.label(NODE_LABEL);
+            Node animalNode = graphDb.createNode(label2);
+            animalNode.setProperty(NODE_PROPERTY_KEY, "animal");
+            myNode.createRelationshipTo(animalNode, RelationshipType.withName("is"));
+
             for (Relationship relationship : relationships) {
-                System.out.println(relationship.getStartNode().getProperty("name"));
+                System.out.println(relationship.getStartNode().getProperty(NODE_PROPERTY_KEY));
                 System.out.println(relationship.getType());
-                System.out.println(relationship.getEndNode().getProperty("name"));
+                System.out.println(relationship.getEndNode().getProperty(NODE_PROPERTY_KEY));
             }
         }
     }
