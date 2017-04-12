@@ -1,14 +1,13 @@
 package com.semanticRelationsGraph.importer;
 
 import com.semanticRelationsGraph.data.SemanticData;
+import com.semanticRelationsGraph.searcher.GraphSearcher;
+import com.semanticRelationsGraph.searcher.GraphSearcherImpl;
 import org.neo4j.graphdb.*;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -17,40 +16,45 @@ import java.util.concurrent.TimeUnit;
  */
 public class DataImporterImpl implements DataImporter {
 
-//    private static final File DB_PATH = new File("target/semantic-relations-graph");//"C:\\Users\\Oliver\\Documents\\NlpTrainingData\\SemanticExtraction\\semantic-relations-graph";
+    private GraphDatabaseService graphDb;
 
-    private static final File DB_PATH = new File("C:\\Users\\Oliver\\Documents\\NlpTrainingData\\SemanticExtraction\\semantic-relations-graph");
-
-    private GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
+    private GraphSearcher graphSearcher;
 
     private final String NODE_LABEL = "semanticObject";
 
     private final String NODE_PROPERTY_KEY = "name";
 
+    public DataImporterImpl(GraphDatabaseService graphDb) {
+        this.graphDb = graphDb;
+        graphSearcher = new GraphSearcherImpl(graphDb);
+    }
 
     public void importData(List<SemanticData> semanticDataList) throws IOException {
         System.out.println("Starting database ...");
 //        FileUtils.deleteRecursively(DB_PATH);
         createIndex();
-        for (SemanticData semanticData : semanticDataList) {
-            createNodesAndRelationship(semanticData);
-        }
-
         try (Transaction tx = graphDb.beginTx()) {
-            Node myNode = findNode();
-
-            Iterable<Relationship> relationships = myNode.getRelationships();
-            Label label2 = Label.label(NODE_LABEL);
-            Node animalNode = graphDb.createNode(label2);
-            animalNode.setProperty(NODE_PROPERTY_KEY, "animal");
-            myNode.createRelationshipTo(animalNode, RelationshipType.withName("is"));
-
-            for (Relationship relationship : relationships) {
-                System.out.println(relationship.getStartNode().getProperty(NODE_PROPERTY_KEY));
-                System.out.println(relationship.getType());
-                System.out.println(relationship.getEndNode().getProperty(NODE_PROPERTY_KEY));
+            for (SemanticData semanticData : semanticDataList) {
+                createNodesAndRelationship(semanticData);
             }
+            tx.success();
         }
+
+//        try (Transaction tx = graphDb.beginTx()) {
+//            Node myNode = findNode();
+//
+//            Iterable<Relationship> relationships = myNode.getRelationships();
+//            Label label2 = Label.label(NODE_LABEL);
+//            Node animalNode = graphDb.createNode(label2);
+//            animalNode.setProperty(NODE_PROPERTY_KEY, "animal");
+//            myNode.createRelationshipTo(animalNode, RelationshipType.withName("is"));
+//
+//            for (Relationship relationship : relationships) {
+//                System.out.println(relationship.getStartNode().getProperty(NODE_PROPERTY_KEY));
+//                System.out.println(relationship.getType());
+//                System.out.println(relationship.getEndNode().getProperty(NODE_PROPERTY_KEY));
+//            }
+//        }
     }
 
     private void createIndex() {
@@ -80,40 +84,37 @@ public class DataImporterImpl implements DataImporter {
     }
 
     private void createNodesAndRelationship(SemanticData semanticData) {
-        try (Transaction tx = graphDb.beginTx()) {
+//        try (Transaction tx = graphDb.beginTx()) {
             Label label2 = Label.label(NODE_LABEL);
-            Node object1 = graphDb.createNode(label2);
-            object1.setProperty(NODE_PROPERTY_KEY, semanticData.getAtomicSubject());
-            Node object2 = graphDb.createNode(label2);
-            object2.setProperty(NODE_PROPERTY_KEY, semanticData.getAtomicNounPredicate());
-            Relationship relationship = object1.createRelationshipTo(object2, RelationshipType.withName(semanticData.getAtomicVerbPredicate()));
+        String atomicSubject = semanticData.getAtomicSubject();
+        Node object1 = null;
+        Node atomicSubjectNode = graphSearcher.findNode(atomicSubject);
+        if (atomicSubjectNode == null) {
+            object1 = graphDb.createNode(label2);
+            object1.setProperty(NODE_PROPERTY_KEY, atomicSubject);
+        } else {
+            object1 = atomicSubjectNode;
+        }
+
+        Node object2 = null;
+        String atomicNounPredicate = semanticData.getAtomicNounPredicate();
+        Node atomicNounPredicateNode = graphSearcher.findNode(atomicNounPredicate);
+        if (atomicNounPredicateNode == null) {
+            object2 = graphDb.createNode(label2);
+            object2.setProperty(NODE_PROPERTY_KEY, atomicNounPredicate);
+        } else {
+            object2 = atomicNounPredicateNode;
+        }
+
+        object1.createRelationshipTo(object2, RelationshipType.withName(semanticData.getAtomicVerbPredicate()));
 //            relationship.setProperty("verb", "eat");
-            System.out.println("Nodes with relationship created");
-            tx.success();
-        }
+        System.out.println("Nodes with relationship created: " + atomicSubject + " [ " + semanticData.getAtomicVerbPredicate() + " ] -> "
+                + atomicNounPredicate);
+
+//            tx.success();
+//        }
     }
 
-    private Node findNode() {
-        // START SNIPPET: findUsers
-        ArrayList<Node> userNodes = new ArrayList<>();
 
-        Label label = Label.label("semanticObject");
-        String nameToFind = "cow";
-        try (Transaction tx = graphDb.beginTx()) {
-            try (ResourceIterator<Node> users =
-                         graphDb.findNodes(label, "name", nameToFind)) {
-                while (users.hasNext()) {
-                    userNodes.add(users.next());
-                }
-
-//                for (Node node : userNodes) {
-//                    System.out.println(
-//                            "The username of user " + idToFind + " is " + node.getProperty("username"));
-//                }
-            }
-        }
-        return userNodes.get(0);
-        // END SNIPPET: findUsers
-    }
 
 }

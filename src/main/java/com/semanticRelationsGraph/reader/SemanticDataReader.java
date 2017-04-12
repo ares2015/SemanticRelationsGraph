@@ -2,6 +2,7 @@ package com.semanticRelationsGraph.reader;
 
 import com.semanticRelationsGraph.data.SemanticData;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -9,6 +10,6 @@ import java.util.List;
  */
 public interface SemanticDataReader {
 
-    List<SemanticData> read();
+    List<SemanticData> read() throws IOException;
 
 }
