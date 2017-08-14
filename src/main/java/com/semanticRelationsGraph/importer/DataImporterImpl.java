@@ -24,6 +24,8 @@ public class DataImporterImpl implements DataImporter {
 
     private final String NODE_PROPERTY_KEY = "name";
 
+    private static RelationshipType REL = RelationshipType.withName("REL");
+
     public DataImporterImpl(GraphDatabaseService graphDb) {
         this.graphDb = graphDb;
         graphSearcher = new GraphSearcherImpl(graphDb);
@@ -106,7 +108,7 @@ public class DataImporterImpl implements DataImporter {
             object2 = atomicNounPredicateNode;
         }
 
-        object1.createRelationshipTo(object2, RelationshipType.withName(semanticData.getAtomicVerbPredicate()));
+        object1.createRelationshipTo(object2, REL);
 //            relationship.setProperty("verb", "eat");
         System.out.println("Nodes with relationship created: " + atomicSubject + " [ " + semanticData.getAtomicVerbPredicate() + " ] -> "
                 + atomicNounPredicate);

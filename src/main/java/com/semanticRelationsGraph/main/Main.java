@@ -9,11 +9,11 @@ import com.semanticRelationsGraph.reader.SemanticDataReader;
 import com.semanticRelationsGraph.reader.SemanticDataReaderImpl;
 import com.semanticRelationsGraph.searcher.GraphSearcher;
 import com.semanticRelationsGraph.searcher.GraphSearcherImpl;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphalgo.GraphAlgoFactory;
+import org.neo4j.graphalgo.PathFinder;
+import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.traversal.Paths;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +29,8 @@ public class Main {
     private static final String NODE_LABEL = "semanticObject";
 
     private static final String NODE_PROPERTY_KEY = "name";
+
+    private static RelationshipType REL = RelationshipType.withName("REL");
 
     public static void main(String[] args) throws IOException {
 
@@ -46,7 +48,7 @@ public class Main {
 
 
         try (Transaction tx = graphDb.beginTx()) {
-            Node myNode = graphSearcher.findNode("women");
+            Node myNode = graphSearcher.findNode("Trump");
             Iterable<Relationship> relationships = myNode.getRelationships();
             for (Relationship relationship : relationships) {
                 System.out.println(relationship.getStartNode().getProperty(NODE_PROPERTY_KEY));
@@ -54,5 +56,31 @@ public class Main {
                 System.out.println(relationship.getEndNode().getProperty(NODE_PROPERTY_KEY));
             }
         }
+
+        try (Transaction tx = graphDb.beginTx()) {
+
+            Node trump = graphSearcher.findNode("Trump");
+            Node merkel = graphSearcher.findNode("Merkel");
+            // START SNIPPET: shortestPathUsage
+            PathFinder<Path> finder = GraphAlgoFactory.shortestPath(PathExpanders.forTypeAndDirection(REL, Direction.BOTH), 5);
+            Path foundPath = finder.findSinglePath(trump, merkel);
+
+            System.out.println("Path from Putin to Obama: " + Paths.simplePathToString(foundPath, NODE_PROPERTY_KEY));
+            // END SNIPPET: shortestPathUsage
+        }
+//        String rows = "";
+//        try ( Transaction ignored = graphDb.beginTx();
+//              Result result = graphDb.execute( "MATCH (n {name: 'my node'}) RETURN n, n.name" ) )
+//        {
+//            while ( result.hasNext() )
+//            {
+//                Map<String,Object> row = result.next();
+//                for ( Map.Entry<String,Object> column : row.entrySet() )
+//                {
+//                    rows += column.getKey() + ": " + column.getValue() + "; ";
+//                }
+//                rows += "\n";
+//            }
+//        }
     }
 }
