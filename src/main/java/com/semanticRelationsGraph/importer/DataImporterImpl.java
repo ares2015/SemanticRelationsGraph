@@ -108,7 +108,10 @@ public class DataImporterImpl implements DataImporter {
             object2 = atomicNounPredicateNode;
         }
 
-        object1.createRelationshipTo(object2, REL);
+        Relationship relationship = object1.createRelationshipTo(object2, REL);
+        relationship.setProperty("verbPredicate", semanticData.getAtomicVerbPredicate());
+
+
 //            relationship.setProperty("verb", "eat");
         System.out.println("Nodes with relationship created: " + atomicSubject + " [ " + semanticData.getAtomicVerbPredicate() + " ] -> "
                 + atomicNounPredicate);

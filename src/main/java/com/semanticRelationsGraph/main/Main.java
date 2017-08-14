@@ -17,6 +17,7 @@ import org.neo4j.graphdb.traversal.Paths;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -59,13 +60,19 @@ public class Main {
 
         try (Transaction tx = graphDb.beginTx()) {
 
-            Node trump = graphSearcher.findNode("Trump");
+            Node Tusk = graphSearcher.findNode("Tusk");
             Node merkel = graphSearcher.findNode("Merkel");
             // START SNIPPET: shortestPathUsage
             PathFinder<Path> finder = GraphAlgoFactory.shortestPath(PathExpanders.forTypeAndDirection(REL, Direction.BOTH), 5);
-            Path foundPath = finder.findSinglePath(trump, merkel);
-
-            System.out.println("Path from Putin to Obama: " + Paths.simplePathToString(foundPath, NODE_PROPERTY_KEY));
+            Path foundPath = finder.findSinglePath(Tusk, merkel);
+            Iterable<Relationship> relationships = foundPath.relationships();
+            Iterator<Relationship> iterator = relationships.iterator();
+            while (iterator.hasNext()) {
+                Relationship relationship = iterator.next();
+                System.out.println(relationship.getStartNode().getProperty("name") + " ->" + relationship.getProperty("verbPredicate") + "->" +
+                        relationship.getEndNode().getProperty("name"));
+            }
+            System.out.println("Path from Tusk to Merkel: " + Paths.simplePathToString(foundPath, NODE_PROPERTY_KEY));
             // END SNIPPET: shortestPathUsage
         }
 //        String rows = "";
