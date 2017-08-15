@@ -13,6 +13,7 @@ import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.Paths;
 
 import java.io.File;
@@ -34,7 +35,7 @@ public class Main {
     private static RelationshipType REL = RelationshipType.withName("REL");
 
     public static void main(String[] args) throws IOException {
-
+        Node tusk = null;
 
         GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
         SemanticRelationsGraph semanticRelationsGraph = new SemanticRelationsGraphImpl();
@@ -49,22 +50,22 @@ public class Main {
 
 
         try (Transaction tx = graphDb.beginTx()) {
-            Node myNode = graphSearcher.findNode("Trump");
+            Node myNode = graphSearcher.findNode("Tusk");
             Iterable<Relationship> relationships = myNode.getRelationships();
             for (Relationship relationship : relationships) {
                 System.out.println(relationship.getStartNode().getProperty(NODE_PROPERTY_KEY));
-                System.out.println(relationship.getType());
+                System.out.println(relationship.getProperty("verbPredicate"));
                 System.out.println(relationship.getEndNode().getProperty(NODE_PROPERTY_KEY));
             }
         }
 
         try (Transaction tx = graphDb.beginTx()) {
 
-            Node Tusk = graphSearcher.findNode("Tusk");
+            tusk = graphSearcher.findNode("Tusk");
             Node merkel = graphSearcher.findNode("Merkel");
             // START SNIPPET: shortestPathUsage
             PathFinder<Path> finder = GraphAlgoFactory.shortestPath(PathExpanders.forTypeAndDirection(REL, Direction.BOTH), 5);
-            Path foundPath = finder.findSinglePath(Tusk, merkel);
+            Path foundPath = finder.findSinglePath(tusk, merkel);
             Iterable<Relationship> relationships = foundPath.relationships();
             Iterator<Relationship> iterator = relationships.iterator();
             while (iterator.hasNext()) {
@@ -75,6 +76,25 @@ public class Main {
             System.out.println("Path from Tusk to Merkel: " + Paths.simplePathToString(foundPath, NODE_PROPERTY_KEY));
             // END SNIPPET: shortestPathUsage
         }
+
+        try (Transaction tx = graphDb.beginTx()) {
+            String output = "";
+            // START SNIPPET: knowslikestraverser
+            for (Path position : graphDb.traversalDescription()
+                    .depthFirst()
+                    .relationships(REL)
+                    .evaluator(Evaluators.toDepth(3))
+                    .traverse(tusk)) {
+//                output += position.startNode().getProperty("name") + " ---" + position.lastRelationship().getProperty("verbPredicate") + "---" + position.endNode().getProperty("name") + "\n";
+//                output += position.startNode().getProperty("name") + " ---" + iterateRels(position.relationships()) + "---" + position.endNode().getProperty("name") + " ";
+                output += iterateRels(position.relationships()) + "********";
+            }
+            System.out.println("Traversal output" + output);
+            // END SNIPPET: knowslikestraverser
+        }
+
+
+
 //        String rows = "";
 //        try ( Transaction ignored = graphDb.beginTx();
 //              Result result = graphDb.execute( "MATCH (n {name: 'my node'}) RETURN n, n.name" ) )
@@ -89,5 +109,18 @@ public class Main {
 //                rows += "\n";
 //            }
 //        }
+    }
+
+    private static String iterateRels(Iterable<Relationship> iterateRels) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Relationship rel : iterateRels) {
+            stringBuilder.append(rel.getStartNode().getProperty("name"));
+            stringBuilder.append("--->");
+            stringBuilder.append(rel.getProperty("verbPredicate"));
+            stringBuilder.append("--->");
+            stringBuilder.append(rel.getEndNode().getProperty("name"));
+            stringBuilder.append(" ");
+        }
+        return stringBuilder.toString();
     }
 }
