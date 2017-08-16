@@ -7,14 +7,17 @@ import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Oliver on 4/11/2017.
  */
 public class DataImporterImpl implements DataImporter {
+
+    private String inputFilePath = "C:\\Users\\Oliver\\Documents\\NlpTrainingData\\SemanticExtraction\\jos_nlp_semantic_data_reverb.csv";
 
     private GraphDatabaseService graphDb;
 
@@ -26,37 +29,65 @@ public class DataImporterImpl implements DataImporter {
 
     private static RelationshipType REL = RelationshipType.withName("REL");
 
+    private int numberOfRelationships = 0;
+
     public DataImporterImpl(GraphDatabaseService graphDb) {
         this.graphDb = graphDb;
         graphSearcher = new GraphSearcherImpl(graphDb);
     }
 
-    public void importData(List<SemanticData> semanticDataList) throws IOException {
+    public void importData() throws IOException {
         System.out.println("Starting database ...");
 //        FileUtils.deleteRecursively(DB_PATH);
         createIndex();
         try (Transaction tx = graphDb.beginTx()) {
-            for (SemanticData semanticData : semanticDataList) {
-                createNodesAndRelationship(semanticData);
+            BufferedReader br = new BufferedReader(new FileReader(inputFilePath));
+            String extractedDataRow = br.readLine();
+            while (extractedDataRow != null) {
+                String atomicSubject = "";
+                String extendedSubject = "";
+                String atomicVerbPredicate = "";
+                String extendedVerbPredicate = "";
+                String atomicNounPredicate = "";
+                String extendedNounPredicate = "";
+                String sentence = "";
+                String wikiTopic = "";
+                String[] split = extractedDataRow.split(",");
+                if (split.length >= 5) {
+                    if (split[1] != null && !split[1].equals("")) {
+                        atomicSubject = split[1];
+                    }
+                    if (split[2] != null && !split[2].equals("")) {
+                        extendedSubject = split[2];
+                    }
+                    if (split[3] != null && !split[3].equals("")) {
+                        atomicVerbPredicate = split[3];
+                    }
+                    if (split[4] != null && !split[4].equals("")) {
+                        extendedVerbPredicate = split[4];
+                    }
+                    if (split[5] != null && !split[5].equals("")) {
+                        atomicNounPredicate = split[5];
+                    }
+                    if (split[6] != null && !split[6].equals("")) {
+                        atomicNounPredicate = split[5];
+                    }
+                    if (split[7] != null && !split[7].equals("")) {
+                        sentence = split[7];
+                    }
+                    if (split[8] != null && !split[8].equals("")) {
+                        wikiTopic = split[8];
+                    }
+                    SemanticData semanticData = new SemanticData(atomicSubject, extendedSubject, atomicVerbPredicate, extendedVerbPredicate,
+                            atomicNounPredicate, extendedNounPredicate, sentence, wikiTopic);
+                    createNodesAndRelationship(semanticData);
+                }
+                numberOfRelationships++;
+                System.out.println("Number of created relationships: " + numberOfRelationships);
+                extractedDataRow = br.readLine();
             }
             tx.success();
         }
-
-//        try (Transaction tx = graphDb.beginTx()) {
-//            Node myNode = findNode();
-//
-//            Iterable<Relationship> relationships = myNode.getRelationships();
-//            Label label2 = Label.label(NODE_LABEL);
-//            Node animalNode = graphDb.createNode(label2);
-//            animalNode.setProperty(NODE_PROPERTY_KEY, "animal");
-//            myNode.createRelationshipTo(animalNode, RelationshipType.withName("is"));
-//
-//            for (Relationship relationship : relationships) {
-//                System.out.println(relationship.getStartNode().getProperty(NODE_PROPERTY_KEY));
-//                System.out.println(relationship.getType());
-//                System.out.println(relationship.getEndNode().getProperty(NODE_PROPERTY_KEY));
-//            }
-//        }
     }
 
     private void createIndex() {
@@ -86,40 +117,55 @@ public class DataImporterImpl implements DataImporter {
     }
 
     private void createNodesAndRelationship(SemanticData semanticData) {
-//        try (Transaction tx = graphDb.beginTx()) {
-            Label label2 = Label.label(NODE_LABEL);
-        String atomicSubject = semanticData.getAtomicSubject();
-        Node object1 = null;
-        Node atomicSubjectNode = graphSearcher.findNode(atomicSubject);
-        if (atomicSubjectNode == null) {
-            object1 = graphDb.createNode(label2);
-            object1.setProperty(NODE_PROPERTY_KEY, atomicSubject);
-        } else {
-            object1 = atomicSubjectNode;
+        try (Transaction tx = graphDb.beginTx()) {
+            Label label = Label.label(NODE_LABEL);
+            String subject = "";
+            String verbPredicate = "";
+            String nounPredicate = "";
+            if (semanticData.getExtendedSubject() != "") {
+                subject = semanticData.getExtendedSubject();
+            } else {
+                subject = semanticData.getAtomicSubject();
+            }
+            if (semanticData.getExtendedVerbPredicate() != "") {
+                verbPredicate = semanticData.getExtendedVerbPredicate();
+            } else {
+                verbPredicate = semanticData.getAtomicVerbPredicate();
+            }
+            if (semanticData.getExtendedNounPredicate() != "") {
+                nounPredicate = semanticData.getExtendedNounPredicate();
+            } else {
+                nounPredicate = semanticData.getAtomicNounPredicate();
+            }
+            Node object1 = null;
+            Node subjectNode = graphSearcher.findNode(subject);
+            if (subjectNode == null) {
+                object1 = graphDb.createNode(label);
+                object1.setProperty(NODE_PROPERTY_KEY, subject);
+            } else {
+                object1 = subjectNode;
+            }
+
+            Node object2 = null;
+            Node nounPredicateNode = graphSearcher.findNode(nounPredicate);
+            if (nounPredicateNode == null) {
+                object2 = graphDb.createNode(label);
+                object2.setProperty(NODE_PROPERTY_KEY, nounPredicate);
+            } else {
+                object2 = nounPredicateNode;
+            }
+
+            Relationship relationship = object1.createRelationshipTo(object2, REL);
+            relationship.setProperty("verbPredicate", verbPredicate);
+            relationship.setProperty("sentence", semanticData.getSentence());
+            relationship.setProperty("wikiTopic", semanticData.getWikiTopic());
+
+            System.out.println("Nodes with relationship created: " + subject + " [ " + verbPredicate + " ] -> "
+                    + nounPredicate);
+
+            tx.success();
+            tx.close();
         }
-
-        Node object2 = null;
-        String atomicNounPredicate = semanticData.getAtomicNounPredicate();
-        Node atomicNounPredicateNode = graphSearcher.findNode(atomicNounPredicate);
-        if (atomicNounPredicateNode == null) {
-            object2 = graphDb.createNode(label2);
-            object2.setProperty(NODE_PROPERTY_KEY, atomicNounPredicate);
-        } else {
-            object2 = atomicNounPredicateNode;
-        }
-
-        Relationship relationship = object1.createRelationshipTo(object2, REL);
-        relationship.setProperty("verbPredicate", semanticData.getAtomicVerbPredicate());
-
-
-//            relationship.setProperty("verb", "eat");
-        System.out.println("Nodes with relationship created: " + atomicSubject + " [ " + semanticData.getAtomicVerbPredicate() + " ] -> "
-                + atomicNounPredicate);
-
-//            tx.success();
-//        }
     }
-
-
 
 }

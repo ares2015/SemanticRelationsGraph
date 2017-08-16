@@ -17,51 +17,52 @@ public class SemanticData {
 
     private String extendedNounPredicate = "";
 
-    public String getAtomicSubject() {
-        return atomicSubject;
+    private String sentence = "";
+
+    private String wikiTopic = "";
+
+    public SemanticData(String atomicSubject, String extendedSubject, String atomicVerbPredicate,
+                        String extendedVerbPredicate, String atomicNounPredicate, String extendedNounPredicate,
+                        String sentence, String wikiTopic) {
+        this.atomicSubject = atomicSubject;
+        this.extendedSubject = extendedSubject;
+        this.atomicVerbPredicate = atomicVerbPredicate;
+        this.extendedVerbPredicate = extendedVerbPredicate;
+        this.atomicNounPredicate = atomicNounPredicate;
+        this.extendedNounPredicate = extendedNounPredicate;
+        this.sentence = sentence;
+        this.wikiTopic = wikiTopic;
     }
 
-    public void setAtomicSubject(String atomicSubject) {
-        this.atomicSubject = atomicSubject;
+    public String getAtomicSubject() {
+        return atomicSubject;
     }
 
     public String getExtendedSubject() {
         return extendedSubject;
     }
 
-    public void setExtendedSubject(String extendedSubject) {
-        this.extendedSubject = extendedSubject;
-    }
-
     public String getAtomicVerbPredicate() {
         return atomicVerbPredicate;
-    }
-
-    public void setAtomicVerbPredicate(String atomicVerbPredicate) {
-        this.atomicVerbPredicate = atomicVerbPredicate;
     }
 
     public String getExtendedVerbPredicate() {
         return extendedVerbPredicate;
     }
 
-    public void setExtendedVerbPredicate(String extendedVerbPredicate) {
-        this.extendedVerbPredicate = extendedVerbPredicate;
-    }
-
     public String getAtomicNounPredicate() {
         return atomicNounPredicate;
-    }
-
-    public void setAtomicNounPredicate(String atomicNounPredicate) {
-        this.atomicNounPredicate = atomicNounPredicate;
     }
 
     public String getExtendedNounPredicate() {
         return extendedNounPredicate;
     }
 
-    public void setExtendedNounPredicate(String extendedNounPredicate) {
-        this.extendedNounPredicate = extendedNounPredicate;
+    public String getSentence() {
+        return sentence;
+    }
+
+    public String getWikiTopic() {
+        return wikiTopic;
     }
 }
