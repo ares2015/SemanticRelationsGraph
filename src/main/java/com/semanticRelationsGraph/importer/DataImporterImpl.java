@@ -83,7 +83,7 @@ public class DataImporterImpl implements DataImporter {
                     createNodesAndRelationship(semanticData);
                 }
                 numberOfRelationships++;
-                if (numberOfRelationships == 20) {
+                if (numberOfRelationships == 15) {
                     break;
                 }
                 System.out.println("Number of created relationships: " + numberOfRelationships);
@@ -159,25 +159,30 @@ public class DataImporterImpl implements DataImporter {
             } else {
                 object2 = nounPredicateNode;
             }
+            if (!existsRelationship(object1, object2, verbPredicate)) {
+                Relationship relationship = object1.createRelationshipTo(object2, REL);
+                relationship.setProperty("verbPredicate", verbPredicate);
+                relationship.setProperty("sentence", semanticData.getSentence());
+                relationship.setProperty("wikiTopic", semanticData.getWikiTopic());
 
-            Relationship relationship = object1.createRelationshipTo(object2, REL);
-            relationship.setProperty("verbPredicate", verbPredicate);
-            relationship.setProperty("sentence", semanticData.getSentence());
-            relationship.setProperty("wikiTopic", semanticData.getWikiTopic());
-
-            System.out.println("Nodes with relationship created: " + subject + " [ " + verbPredicate + " ] -> "
-                    + nounPredicate);
-
+                System.out.println("Nodes with relationship created: " + subject + " [ " + verbPredicate + " ] -> "
+                        + nounPredicate);
+            }
             tx.success();
             tx.close();
         }
     }
 
-    Relationship getRelationshipBetween(Node n1, Node n2) { // RelationshipType type, Direction direction
-        for (Relationship rel : n1.getRelationships()) { // n1.getRelationships(type,direction)
-            if (rel.getOtherNode(n1).equals(n2)) return rel;
+    boolean existsRelationship(Node n1, Node n2, String property) { // RelationshipType type, Direction direction
+        if (n1.getRelationships() == null) {
+            return false;
         }
-        return null;
+        for (Relationship rel : n1.getRelationships()) { // n1.getRelationships(type,direction)
+            if (rel.getOtherNode(n1).equals(n2)) {
+                return property.equals(rel.getProperty("verbPredicate"));
+            }
+        }
+        return false;
     }
 
 }
