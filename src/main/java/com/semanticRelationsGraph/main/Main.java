@@ -8,6 +8,7 @@ import com.semanticRelationsGraph.searcher.GraphSearcher;
 import com.semanticRelationsGraph.searcher.GraphSearcherImpl;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.traversal.Evaluators;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class Main {
 
 
         try (Transaction tx = graphDb.beginTx()) {
-            Node myNode = graphSearcher.findNode("orbiter");
+            Node myNode = graphSearcher.findNode("Rubinstein");
             Iterable<Relationship> relationships = myNode.getRelationships();
             for (Relationship relationship : relationships) {
                 System.out.println(relationship.getStartNode().getProperty(NODE_PROPERTY_KEY));
@@ -47,6 +48,26 @@ public class Main {
                 System.out.println(relationship.getEndNode().getProperty(NODE_PROPERTY_KEY));
             }
         }
+
+        try (Transaction tx = graphDb.beginTx()) {
+            Node myNode = graphSearcher.findNode("Rubinstein");
+            String output = "";
+            // START SNIPPET: knowslikestraverser
+            for (Path position : graphDb.traversalDescription()
+                    .depthFirst()
+                    .relationships(REL)
+                    .evaluator(Evaluators.toDepth(3))
+                    .traverse(myNode)) {
+//                output += position.startNode().getProperty("name") + " ---" + position.lastRelationship().getProperty("verbPredicate") + "---" + position.endNode().getProperty("name") + "\n";
+//                output += position.startNode().getProperty("name") + " ---" + iterateRels(position.relationships()) + "---" + position.endNode().getProperty("name") + " ";
+                output += iterateRels(position.relationships()) + "********";
+            }
+            System.out.println("Traversal output" + output);
+            // END SNIPPET: knowslikestraverser
+        }
+    }
+
+
 //
 //        try (Transaction tx = graphDb.beginTx()) {
 //
@@ -66,50 +87,21 @@ public class Main {
 //            // END SNIPPET: shortestPathUsage
 //        }
 //
-//        try (Transaction tx = graphDb.beginTx()) {
-//            String output = "";
-//            // START SNIPPET: knowslikestraverser
-//            for (Path position : graphDb.traversalDescription()
-//                    .depthFirst()
-//                    .relationships(REL)
-//                    .evaluator(Evaluators.toDepth(3))
-//                    .traverse(tusk)) {
-////                output += position.startNode().getProperty("name") + " ---" + position.lastRelationship().getProperty("verbPredicate") + "---" + position.endNode().getProperty("name") + "\n";
-////                output += position.startNode().getProperty("name") + " ---" + iterateRels(position.relationships()) + "---" + position.endNode().getProperty("name") + " ";
-//                output += iterateRels(position.relationships()) + "********";
-//            }
-//            System.out.println("Traversal output" + output);
-//            // END SNIPPET: knowslikestraverser
-//        }
 //
 //
 //
-////        String rows = "";
-////        try ( Transaction ignored = graphDb.beginTx();
-////              Result result = graphDb.execute( "MATCH (n {name: 'my node'}) RETURN n, n.name" ) )
-////        {
-////            while ( result.hasNext() )
-////            {
-////                Map<String,Object> row = result.next();
-////                for ( Map.Entry<String,Object> column : row.entrySet() )
-////                {
-////                    rows += column.getKey() + ": " + column.getValue() + "; ";
-////                }
-////                rows += "\n";
-////            }
-////        }
-//    }
+
 //
-//    private static String iterateRels(Iterable<Relationship> iterateRels) {
-//        StringBuilder stringBuilder = new StringBuilder();
-//        for (Relationship rel : iterateRels) {
-//            stringBuilder.append(rel.getStartNode().getProperty("name"));
-//            stringBuilder.append("--->");
-//            stringBuilder.append(rel.getProperty("verbPredicate"));
-//            stringBuilder.append("--->");
-//            stringBuilder.append(rel.getEndNode().getProperty("name"));
-//            stringBuilder.append(" ");
-//        }
-//        return stringBuilder.toString();
+private static String iterateRels(Iterable<Relationship> iterateRels) {
+    StringBuilder stringBuilder = new StringBuilder();
+    for (Relationship rel : iterateRels) {
+        stringBuilder.append(rel.getStartNode().getProperty("name"));
+        stringBuilder.append("--->");
+        stringBuilder.append(rel.getProperty("verbPredicate"));
+        stringBuilder.append("--->");
+        stringBuilder.append(rel.getEndNode().getProperty("name"));
+        stringBuilder.append(" ");
+    }
+    return stringBuilder.toString();
     }
 }

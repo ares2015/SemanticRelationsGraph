@@ -83,7 +83,7 @@ public class DataImporterImpl implements DataImporter {
                     createNodesAndRelationship(semanticData);
                 }
                 numberOfRelationships++;
-                if (numberOfRelationships == 15) {
+                if (numberOfRelationships == 10000) {
                     break;
                 }
                 System.out.println("Number of created relationships: " + numberOfRelationships);
@@ -128,19 +128,19 @@ public class DataImporterImpl implements DataImporter {
             String verbPredicate = "";
             String nounPredicate = "";
             if (semanticData.getExtendedSubject() != "") {
-                subject = semanticData.getExtendedSubject();
+                subject = removeDoubleQuotesEmptyString(semanticData.getExtendedSubject());
             } else {
-                subject = semanticData.getAtomicSubject();
+                subject = removeDoubleQuotesEmptyString(semanticData.getAtomicSubject());
             }
             if (semanticData.getExtendedVerbPredicate() != "") {
-                verbPredicate = semanticData.getExtendedVerbPredicate();
+                verbPredicate = removeDoubleQuotesEmptyString(semanticData.getExtendedVerbPredicate());
             } else {
-                verbPredicate = semanticData.getAtomicVerbPredicate();
+                verbPredicate = removeDoubleQuotesEmptyString(semanticData.getAtomicVerbPredicate());
             }
             if (semanticData.getExtendedNounPredicate() != "") {
-                nounPredicate = semanticData.getExtendedNounPredicate();
+                nounPredicate = removeDoubleQuotesEmptyString(semanticData.getExtendedNounPredicate());
             } else {
-                nounPredicate = semanticData.getAtomicNounPredicate();
+                nounPredicate = removeDoubleQuotesEmptyString(semanticData.getAtomicNounPredicate());
             }
             Node object1 = null;
             Node subjectNode = graphSearcher.findNode(subject);
@@ -173,7 +173,20 @@ public class DataImporterImpl implements DataImporter {
         }
     }
 
-    boolean existsRelationship(Node n1, Node n2, String property) { // RelationshipType type, Direction direction
+    private String removeDoubleQuotesEmptyString(String word) {
+        if (word.startsWith("\"")) {
+            word = word.substring(1, word.length() - 1);
+        }
+        if (word.endsWith("\"")) {
+            word = word.substring(0, word.length() - 1);
+        }
+        if (word.endsWith(" ")) {
+            word = word.substring(0, word.length() - 1);
+        }
+        return word;
+    }
+
+    private boolean existsRelationship(Node n1, Node n2, String property) { // RelationshipType type, Direction direction
         if (n1.getRelationships() == null) {
             return false;
         }
