@@ -4,9 +4,9 @@ import com.semanticRelationsGraph.graph.SemanticRelationsGraph;
 import com.semanticRelationsGraph.graph.SemanticRelationsGraphImpl;
 import com.semanticRelationsGraph.importer.DataImporter;
 import com.semanticRelationsGraph.importer.DataImporterImpl;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.RelationshipType;
+import com.semanticRelationsGraph.searcher.GraphSearcher;
+import com.semanticRelationsGraph.searcher.GraphSearcherImpl;
+import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 import java.io.File;
@@ -35,18 +35,18 @@ public class Main {
         DataImporter dataImporter = new DataImporterImpl(graphDb);
         dataImporter.importData();
 
-//        GraphSearcher graphSearcher = new GraphSearcherImpl(graphDb);
-//
-//
-//        try (Transaction tx = graphDb.beginTx()) {
-//            Node myNode = graphSearcher.findNode("Tusk");
-//            Iterable<Relationship> relationships = myNode.getRelationships();
-//            for (Relationship relationship : relationships) {
-//                System.out.println(relationship.getStartNode().getProperty(NODE_PROPERTY_KEY));
-//                System.out.println(relationship.getProperty("verbPredicate"));
-//                System.out.println(relationship.getEndNode().getProperty(NODE_PROPERTY_KEY));
-//            }
-//        }
+        GraphSearcher graphSearcher = new GraphSearcherImpl(graphDb);
+
+
+        try (Transaction tx = graphDb.beginTx()) {
+            Node myNode = graphSearcher.findNode("orbiter");
+            Iterable<Relationship> relationships = myNode.getRelationships();
+            for (Relationship relationship : relationships) {
+                System.out.println(relationship.getStartNode().getProperty(NODE_PROPERTY_KEY));
+                System.out.println(relationship.getProperty("verbPredicate"));
+                System.out.println(relationship.getEndNode().getProperty(NODE_PROPERTY_KEY));
+            }
+        }
 //
 //        try (Transaction tx = graphDb.beginTx()) {
 //

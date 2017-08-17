@@ -39,7 +39,7 @@ public class DataImporterImpl implements DataImporter {
     public void importData() throws IOException {
         System.out.println("Starting database ...");
 //        FileUtils.deleteRecursively(DB_PATH);
-        createIndex();
+//        createIndex();
         try (Transaction tx = graphDb.beginTx()) {
             BufferedReader br = new BufferedReader(new FileReader(inputFilePath));
             String extractedDataRow = br.readLine();
@@ -83,10 +83,14 @@ public class DataImporterImpl implements DataImporter {
                     createNodesAndRelationship(semanticData);
                 }
                 numberOfRelationships++;
+                if (numberOfRelationships == 20) {
+                    break;
+                }
                 System.out.println("Number of created relationships: " + numberOfRelationships);
                 extractedDataRow = br.readLine();
             }
             tx.success();
+            tx.close();
         }
     }
 
@@ -95,6 +99,7 @@ public class DataImporterImpl implements DataImporter {
         IndexDefinition indexDefinition;
         try (Transaction tx = graphDb.beginTx()) {
             Schema schema = graphDb.schema();
+
             indexDefinition = schema.indexFor(Label.label(NODE_LABEL))
                     .on(NODE_PROPERTY_KEY)
                     .create();
@@ -166,6 +171,13 @@ public class DataImporterImpl implements DataImporter {
             tx.success();
             tx.close();
         }
+    }
+
+    Relationship getRelationshipBetween(Node n1, Node n2) { // RelationshipType type, Direction direction
+        for (Relationship rel : n1.getRelationships()) { // n1.getRelationships(type,direction)
+            if (rel.getOtherNode(n1).equals(n2)) return rel;
+        }
+        return null;
     }
 
 }
