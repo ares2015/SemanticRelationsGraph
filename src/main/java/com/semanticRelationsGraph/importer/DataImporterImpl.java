@@ -83,7 +83,7 @@ public class DataImporterImpl implements DataImporter {
                     createNodesAndRelationship(semanticData);
                 }
                 numberOfRelationships++;
-                if (numberOfRelationships == 10000) {
+                if (numberOfRelationships == 500000) {
                     break;
                 }
                 System.out.println("Number of created relationships: " + numberOfRelationships);
