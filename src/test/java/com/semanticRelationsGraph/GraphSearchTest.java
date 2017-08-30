@@ -9,6 +9,7 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 import java.io.File;
+import java.util.Optional;
 
 
 /**
@@ -20,7 +21,9 @@ public class GraphSearchTest {
 
     private static GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
 
-    private static final String NODE_PROPERTY_KEY = "name";
+    private static final String SHORT_NAME = "shortName";
+
+    private static final String LONG_NAME = "longName";
 
     private static GraphSearcher graphSearcher = new GraphSearcherImpl(graphDb);
 
@@ -30,16 +33,15 @@ public class GraphSearchTest {
 
     private static void testGetNodeRelationships() {
         try (Transaction tx = graphDb.beginTx()) {
-            Node myNode = graphSearcher.findNode("Volga river ");
-            Iterable<Relationship> relationships = myNode.getRelationships();
+            Optional<Node> nodeOptional = graphSearcher.findNode("Putin", true);
+            Iterable<Relationship> relationships = nodeOptional.get().getRelationships();
             for (Relationship relationship : relationships) {
-                System.out.println(relationship.getStartNode().getProperty(NODE_PROPERTY_KEY));
+                System.out.println(relationship.getStartNode().getProperty(SHORT_NAME));
                 System.out.println(relationship.getProperty("verbPredicate"));
-                System.out.println(relationship.getEndNode().getProperty(NODE_PROPERTY_KEY));
+                System.out.println(relationship.getEndNode().getProperty(SHORT_NAME));
             }
         }
     }
+
+
 }
-
-
-

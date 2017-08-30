@@ -10,6 +10,7 @@ import org.neo4j.graphdb.schema.Schema;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -17,7 +18,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class DataImporterImpl implements DataImporter {
 
-    private String inputFilePath = "C:\\Users\\Oliver\\Documents\\NlpTrainingData\\SemanticExtraction\\jos_nlp_semantic_data_reverb.csv";
+//    private String inputFilePath = "C:\\Users\\Oliver\\Documents\\NlpTrainingData\\SemanticExtraction\\jos_nlp_semantic_data.csv";
+
+    private String inputFilePath = "C:\\Users\\Oliver\\Documents\\NlpTrainingData\\SemanticExtraction\\SemanticExtractedData.txt";
 
     private GraphDatabaseService graphDb;
 
@@ -25,7 +28,9 @@ public class DataImporterImpl implements DataImporter {
 
     private final String NODE_LABEL = "semanticObject";
 
-    private final String NODE_PROPERTY_KEY = "name";
+    private final String SHORT_NAME = "shortName";
+
+    private final String LONG_NAME = "longName";
 
     private static RelationshipType REL = RelationshipType.withName("REL");
 
@@ -52,124 +57,124 @@ public class DataImporterImpl implements DataImporter {
                 String extendedNounPredicate = "";
                 String sentence = "";
                 String wikiTopic = "";
-                String[] split = extractedDataRow.split(",");
+//                String[] split = extractedDataRow.split(",");
+                String[] split = extractedDataRow.split("#");
                 if (split.length >= 5) {
                     if (split[1] != null && !split[1].equals("")) {
-                        atomicSubject = split[1];
+                        atomicSubject = removeDoubleQuotesEmptyString(split[1]);
                     }
                     if (split[2] != null && !split[2].equals("")) {
-                        extendedSubject = split[2];
+                        extendedSubject = removeDoubleQuotesEmptyString(split[2]);
                     }
                     if (split[3] != null && !split[3].equals("")) {
-                        atomicVerbPredicate = split[3];
+                        atomicVerbPredicate = removeDoubleQuotesEmptyString(split[3]);
                     }
                     if (split[4] != null && !split[4].equals("")) {
-                        extendedVerbPredicate = split[4];
+                        extendedVerbPredicate = removeDoubleQuotesEmptyString(split[4]);
                     }
                     if (split[5] != null && !split[5].equals("")) {
-                        atomicNounPredicate = split[5];
+                        atomicNounPredicate = removeDoubleQuotesEmptyString(split[5]);
                     }
                     if (split[6] != null && !split[6].equals("")) {
-                        atomicNounPredicate = split[5];
+                        extendedNounPredicate = removeDoubleQuotesEmptyString(split[6]);
                     }
-                    if (split[7] != null && !split[7].equals("")) {
-                        sentence = split[7];
-                    }
-                    if (split[8] != null && !split[8].equals("")) {
-                        wikiTopic = split[8];
-                    }
-                    SemanticData semanticData = new SemanticData(atomicSubject, extendedSubject, atomicVerbPredicate, extendedVerbPredicate,
-                            atomicNounPredicate, extendedNounPredicate, sentence, wikiTopic);
-                    createNodesAndRelationship(semanticData);
+//                    if (split[7] != null && !split[7].equals("")) {
+//                        sentence = removeDoubleQuotesEmptyString(split[7]);
+//                    }
+//                    if (split[8] != null && !split[8].equals("")) {
+//                        wikiTopic = removeDoubleQuotesEmptyString(split[8]);
+//                    }
                 }
+
+                SemanticData semanticData = new SemanticData(atomicSubject, extendedSubject, atomicVerbPredicate, extendedVerbPredicate,
+                        atomicNounPredicate, extendedNounPredicate, sentence, wikiTopic);
+                createNodesAndRelationship(semanticData);
+
                 numberOfRelationships++;
-                if (numberOfRelationships == 500000) {
-                    break;
-                }
+//                if (numberOfRelationships == 6000) {
+//                    break;
+//                }
                 System.out.println("Number of created relationships: " + numberOfRelationships);
                 extractedDataRow = br.readLine();
             }
-            tx.success();
-            tx.close();
+
+//            tx.success();
+//            tx.close();
+
         }
+
     }
 
+
     private void createIndex() {
-        // START SNIPPET: createIndex
         IndexDefinition indexDefinition;
         try (Transaction tx = graphDb.beginTx()) {
             Schema schema = graphDb.schema();
 
             indexDefinition = schema.indexFor(Label.label(NODE_LABEL))
-                    .on(NODE_PROPERTY_KEY)
+                    .on(SHORT_NAME)
                     .create();
             tx.success();
         }
-        // END SNIPPET: createIndex
-        // START SNIPPET: wait
         try (Transaction tx = graphDb.beginTx()) {
             Schema schema = graphDb.schema();
             schema.awaitIndexOnline(indexDefinition, 10, TimeUnit.SECONDS);
         }
-        // END SNIPPET: wait
-        // START SNIPPET: progress
         try (Transaction tx = graphDb.beginTx()) {
             Schema schema = graphDb.schema();
             System.out.println(String.format("Percent complete: %1.0f%%",
                     schema.getIndexPopulationProgress(indexDefinition).getCompletedPercentage()));
         }
-        // END SNIPPET: progress
     }
 
     private void createNodesAndRelationship(SemanticData semanticData) {
         try (Transaction tx = graphDb.beginTx()) {
-            Label label = Label.label(NODE_LABEL);
-            String subject = "";
-            String verbPredicate = "";
-            String nounPredicate = "";
-            if (semanticData.getExtendedSubject() != "") {
-                subject = removeDoubleQuotesEmptyString(semanticData.getExtendedSubject());
-            } else {
-                subject = removeDoubleQuotesEmptyString(semanticData.getAtomicSubject());
-            }
-            if (semanticData.getExtendedVerbPredicate() != "") {
-                verbPredicate = removeDoubleQuotesEmptyString(semanticData.getExtendedVerbPredicate());
-            } else {
-                verbPredicate = removeDoubleQuotesEmptyString(semanticData.getAtomicVerbPredicate());
-            }
-            if (semanticData.getExtendedNounPredicate() != "") {
-                nounPredicate = removeDoubleQuotesEmptyString(semanticData.getExtendedNounPredicate());
-            } else {
-                nounPredicate = removeDoubleQuotesEmptyString(semanticData.getAtomicNounPredicate());
-            }
-            Node object1 = null;
-            Node subjectNode = graphSearcher.findNode(subject);
-            if (subjectNode == null) {
-                object1 = graphDb.createNode(label);
-                object1.setProperty(NODE_PROPERTY_KEY, subject);
-            } else {
-                object1 = subjectNode;
-            }
+            Node subjectNode = createNode(semanticData.getAtomicSubject(), semanticData.getExtendedSubject());
+            Node nounPredicateNode = createNode(semanticData.getAtomicNounPredicate(), semanticData.getExtendedNounPredicate());
+            String atomicVerbPredicate = semanticData.getAtomicVerbPredicate();
+            String extendedVerbPredicate = semanticData.getExtendedVerbPredicate();
 
-            Node object2 = null;
-            Node nounPredicateNode = graphSearcher.findNode(nounPredicate);
-            if (nounPredicateNode == null) {
-                object2 = graphDb.createNode(label);
-                object2.setProperty(NODE_PROPERTY_KEY, nounPredicate);
+            String verbPredicate = "";
+            if (!"".equals(extendedVerbPredicate)) {
+                verbPredicate = extendedVerbPredicate;
             } else {
-                object2 = nounPredicateNode;
+                verbPredicate = atomicVerbPredicate;
             }
-            if (!existsRelationship(object1, object2, verbPredicate)) {
-                Relationship relationship = object1.createRelationshipTo(object2, REL);
+            if (!existsRelationship(subjectNode, nounPredicateNode, verbPredicate)) {
+                Relationship relationship = subjectNode.createRelationshipTo(nounPredicateNode, REL);
                 relationship.setProperty("verbPredicate", verbPredicate);
                 relationship.setProperty("sentence", semanticData.getSentence());
                 relationship.setProperty("wikiTopic", semanticData.getWikiTopic());
-
-                System.out.println("Nodes with relationship created: " + subject + " [ " + verbPredicate + " ] -> "
-                        + nounPredicate);
+                System.out.println("Nodes with relationship created: " + subjectNode.getProperty("shortName") + " [ " + verbPredicate + " ] -> "
+                        + nounPredicateNode.getProperty("shortName"));
             }
             tx.success();
             tx.close();
+        }
+    }
+
+    private Node createNode(String atomicProperty, String extendedProperty) {
+        Label label = Label.label(NODE_LABEL);
+        Node node = null;
+        Optional<Node> nodeOptional = null;
+        if ("".equals(atomicProperty) && !"".equals(extendedProperty)) {
+            nodeOptional = graphSearcher.findNode(extendedProperty, false);
+        } else if (!"".equals(atomicProperty) && "".equals(extendedProperty)) {
+            nodeOptional = graphSearcher.findNode(atomicProperty, true);
+        } else if (!"".equals(atomicProperty) && !"".equals(extendedProperty)) {
+            nodeOptional = graphSearcher.findNode(atomicProperty, extendedProperty);
+        }
+        if (!nodeOptional.isPresent()) {
+            node = graphDb.createNode(label);
+            if (!"".equals(atomicProperty)) {
+                node.setProperty(SHORT_NAME, atomicProperty);
+            }
+            if (!"".equals(extendedProperty)) {
+                node.setProperty(LONG_NAME, extendedProperty);
+            }
+            return node;
+        } else {
+            return nodeOptional.get();
         }
     }
 
@@ -186,13 +191,13 @@ public class DataImporterImpl implements DataImporter {
         return word;
     }
 
-    private boolean existsRelationship(Node n1, Node n2, String property) { // RelationshipType type, Direction direction
+    private boolean existsRelationship(Node n1, Node n2, String verbPredicate) {
         if (n1.getRelationships() == null) {
             return false;
         }
-        for (Relationship rel : n1.getRelationships()) { // n1.getRelationships(type,direction)
+        for (Relationship rel : n1.getRelationships()) {
             if (rel.getOtherNode(n1).equals(n2)) {
-                return property.equals(rel.getProperty("verbPredicate"));
+                return verbPredicate.equals(rel.getProperty("verbPredicate"));
             }
         }
         return false;
