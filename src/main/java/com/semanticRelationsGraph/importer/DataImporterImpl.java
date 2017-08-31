@@ -83,7 +83,7 @@ public class DataImporterImpl implements DataImporter {
                     createNodesAndRelationship(semanticData);
                 }
                 numberOfRelationships++;
-                if (numberOfRelationships == 20000) {
+                if (numberOfRelationships == 500000) {
                     break;
                 }
                 System.out.println("Number of created relationships: " + numberOfRelationships);
@@ -133,7 +133,7 @@ public class DataImporterImpl implements DataImporter {
             } else if (!atomicSubject.isEmpty() && extendedSubject.isEmpty()) {
                 atomicSubjectNode = createNode(atomicSubject);
             } else if (atomicSubject.isEmpty() && !extendedSubject.isEmpty()) {
-                extendedSubjectNode = createNode(atomicSubject);
+                extendedSubjectNode = createNode(extendedSubject);
             }
 
             Node atomicNounPredicateNode = null;
@@ -294,9 +294,9 @@ public class DataImporterImpl implements DataImporter {
 
 
     private Node createNode(String nodeName) {
-        if (!containsAlphaNumericalChars(nodeName)) {
-            return null;
-        }
+//        if (!containsAlphaNumericalChars(nodeName)) {
+//            return null;
+//        }
         Label label = Label.label(NODE_LABEL);
         Node node = null;
         node = graphSearcher.findNode(nodeName);
