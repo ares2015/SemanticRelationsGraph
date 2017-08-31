@@ -54,28 +54,28 @@ public class DataImporterImpl implements DataImporter {
                 String wikiTopic = "";
                 String[] split = extractedDataRow.split(",");
                 if (split.length >= 5) {
-                    if (split[1] != null && !split[1].equals("")) {
+                    if (split[1] != null && !split[1].isEmpty()) {
                         atomicSubject = removeDoubleQuotesEmptyString(split[1]);
                     }
-                    if (split[2] != null && !split[2].equals("")) {
+                    if (split[2] != null && !split[2].isEmpty()) {
                         extendedSubject = removeDoubleQuotesEmptyString(split[2]);
                     }
-                    if (split[3] != null && !split[3].equals("")) {
+                    if (split[3] != null && !split[3].isEmpty()) {
                         atomicVerbPredicate = removeDoubleQuotesEmptyString(split[3]);
                     }
-                    if (split[4] != null && !split[4].equals("")) {
+                    if (split[4] != null && !split[4].isEmpty()) {
                         extendedVerbPredicate = removeDoubleQuotesEmptyString(split[4]);
                     }
-                    if (split[5] != null && !split[5].equals("")) {
+                    if (split[5] != null && !split[5].isEmpty()) {
                         atomicNounPredicate = removeDoubleQuotesEmptyString(split[5]);
                     }
-                    if (split[6] != null && !split[6].equals("")) {
+                    if (split[6] != null && !split[6].isEmpty()) {
                         atomicNounPredicate = removeDoubleQuotesEmptyString(split[5]);
                     }
-                    if (split[7] != null && !split[7].equals("")) {
+                    if (split[7] != null && !split[7].isEmpty()) {
                         sentence = removeDoubleQuotesEmptyString(split[7]);
                     }
-                    if (split[8] != null && !split[8].equals("")) {
+                    if (split[8] != null && !split[8].isEmpty()) {
                         wikiTopic = removeDoubleQuotesEmptyString(split[8]);
                     }
                     SemanticData semanticData = new SemanticData(atomicSubject, extendedSubject, atomicVerbPredicate, extendedVerbPredicate,
@@ -123,16 +123,16 @@ public class DataImporterImpl implements DataImporter {
             Node extendedSubjectNode = null;
             String atomicSubject = semanticData.getAtomicSubject();
             String extendedSubject = semanticData.getExtendedSubject();
-            if (!"".equals(atomicSubject) && !"".equals(extendedSubject)) {
+            if (!atomicSubject.isEmpty() && !extendedSubject.isEmpty()) {
                 if (atomicSubject.equals(extendedSubject)) {
                     atomicSubjectNode = createNode(atomicSubject);
                 } else {
                     atomicSubjectNode = createNode(atomicSubject);
                     extendedSubjectNode = createNode(extendedSubject);
                 }
-            } else if (!"".equals(atomicSubject) && "".equals(extendedSubject)) {
+            } else if (!atomicSubject.isEmpty() && extendedSubject.isEmpty()) {
                 atomicSubjectNode = createNode(atomicSubject);
-            } else if ("".equals(atomicSubject) && !"".equals(extendedSubject)) {
+            } else if (atomicSubject.isEmpty() && !extendedSubject.isEmpty()) {
                 extendedSubjectNode = createNode(atomicSubject);
             }
 
@@ -140,16 +140,16 @@ public class DataImporterImpl implements DataImporter {
             Node extendedNounPredicateNode = null;
             String atomicNounPredicate = semanticData.getAtomicNounPredicate();
             String extendedNounPredicate = semanticData.getExtendedNounPredicate();
-            if (!"".equals(atomicNounPredicate) && !"".equals(extendedNounPredicate)) {
+            if (!atomicNounPredicate.isEmpty() && !extendedNounPredicate.isEmpty()) {
                 if (atomicNounPredicate.equals(extendedNounPredicate)) {
                     atomicNounPredicateNode = createNode(atomicNounPredicate);
                 } else {
                     atomicNounPredicateNode = createNode(atomicNounPredicate);
                     extendedNounPredicateNode = createNode(extendedNounPredicate);
                 }
-            } else if (!"".equals(atomicNounPredicate) && "".equals(extendedNounPredicate)) {
+            } else if (!atomicNounPredicate.isEmpty() && extendedNounPredicate.isEmpty()) {
                 atomicNounPredicateNode = createNode(atomicNounPredicate);
-            } else if ("".equals(atomicNounPredicate) && !"".equals(extendedNounPredicate)) {
+            } else if (atomicNounPredicate.isEmpty() && !extendedNounPredicate.isEmpty()) {
                 extendedNounPredicateNode = createNode(extendedNounPredicate);
             }
 
@@ -157,13 +157,13 @@ public class DataImporterImpl implements DataImporter {
             if (atomicSubjectNode != null && extendedSubjectNode != null && atomicNounPredicateNode != null && extendedNounPredicateNode != null) {
                 String atomicVerbPredicate = semanticData.getAtomicVerbPredicate();
                 String extendedVerbPredicate = semanticData.getExtendedVerbPredicate();
-                if (!"".equals(atomicVerbPredicate)) {
+                if (!atomicVerbPredicate.isEmpty()) {
                     createRelationship(atomicSubjectNode, atomicNounPredicateNode, atomicVerbPredicate, semanticData);
                     createRelationship(atomicSubjectNode, extendedNounPredicateNode, atomicVerbPredicate, semanticData);
                     createRelationship(extendedSubjectNode, atomicNounPredicateNode, atomicVerbPredicate, semanticData);
                     createRelationship(extendedSubjectNode, extendedNounPredicateNode, atomicVerbPredicate, semanticData);
                 }
-                if (!"".equals(extendedVerbPredicate)) {
+                if (!extendedVerbPredicate.isEmpty()) {
                     createRelationship(atomicSubjectNode, atomicNounPredicateNode, extendedVerbPredicate, semanticData);
                     createRelationship(atomicSubjectNode, extendedNounPredicateNode, extendedVerbPredicate, semanticData);
                     createRelationship(extendedSubjectNode, atomicNounPredicateNode, extendedVerbPredicate, semanticData);
@@ -175,11 +175,11 @@ public class DataImporterImpl implements DataImporter {
             if (atomicSubjectNode == null && extendedSubjectNode != null && atomicNounPredicateNode != null && extendedNounPredicateNode != null) {
                 String atomicVerbPredicate = semanticData.getAtomicVerbPredicate();
                 String extendedVerbPredicate = semanticData.getExtendedVerbPredicate();
-                if (!"".equals(atomicVerbPredicate)) {
+                if (!atomicVerbPredicate.isEmpty()) {
                     createRelationship(extendedSubjectNode, atomicNounPredicateNode, atomicVerbPredicate, semanticData);
                     createRelationship(extendedSubjectNode, extendedNounPredicateNode, atomicVerbPredicate, semanticData);
                 }
-                if (!"".equals(extendedVerbPredicate)) {
+                if (!extendedVerbPredicate.isEmpty()) {
                     createRelationship(extendedSubjectNode, atomicNounPredicateNode, extendedVerbPredicate, semanticData);
                     createRelationship(extendedSubjectNode, extendedNounPredicateNode, extendedVerbPredicate, semanticData);
                 }
@@ -189,11 +189,11 @@ public class DataImporterImpl implements DataImporter {
             if (atomicSubjectNode != null && extendedSubjectNode == null && atomicNounPredicateNode != null && extendedNounPredicateNode != null) {
                 String atomicVerbPredicate = semanticData.getAtomicVerbPredicate();
                 String extendedVerbPredicate = semanticData.getExtendedVerbPredicate();
-                if (!"".equals(atomicVerbPredicate)) {
+                if (!atomicVerbPredicate.isEmpty()) {
                     createRelationship(atomicSubjectNode, atomicNounPredicateNode, atomicVerbPredicate, semanticData);
                     createRelationship(atomicSubjectNode, extendedNounPredicateNode, atomicVerbPredicate, semanticData);
                 }
-                if (!"".equals(extendedVerbPredicate)) {
+                if (!extendedVerbPredicate.isEmpty()) {
                     createRelationship(atomicSubjectNode, atomicNounPredicateNode, extendedVerbPredicate, semanticData);
                     createRelationship(atomicSubjectNode, extendedNounPredicateNode, extendedVerbPredicate, semanticData);
                 }
@@ -203,11 +203,11 @@ public class DataImporterImpl implements DataImporter {
             if (atomicSubjectNode != null && extendedSubjectNode != null && atomicNounPredicateNode == null && extendedNounPredicateNode != null) {
                 String atomicVerbPredicate = semanticData.getAtomicVerbPredicate();
                 String extendedVerbPredicate = semanticData.getExtendedVerbPredicate();
-                if (!"".equals(atomicVerbPredicate)) {
+                if (!atomicVerbPredicate.isEmpty()) {
                     createRelationship(atomicSubjectNode, extendedNounPredicateNode, atomicVerbPredicate, semanticData);
                     createRelationship(extendedSubjectNode, extendedNounPredicateNode, atomicVerbPredicate, semanticData);
                 }
-                if (!"".equals(extendedVerbPredicate)) {
+                if (!extendedVerbPredicate.isEmpty()) {
                     createRelationship(atomicSubjectNode, extendedNounPredicateNode, extendedVerbPredicate, semanticData);
                     createRelationship(extendedSubjectNode, extendedNounPredicateNode, extendedVerbPredicate, semanticData);
                 }
@@ -217,11 +217,11 @@ public class DataImporterImpl implements DataImporter {
             if (atomicSubjectNode != null && extendedSubjectNode != null && atomicNounPredicateNode != null && extendedNounPredicateNode == null) {
                 String atomicVerbPredicate = semanticData.getAtomicVerbPredicate();
                 String extendedVerbPredicate = semanticData.getExtendedVerbPredicate();
-                if (!"".equals(atomicVerbPredicate)) {
+                if (!atomicVerbPredicate.isEmpty()) {
                     createRelationship(atomicSubjectNode, atomicNounPredicateNode, atomicVerbPredicate, semanticData);
                     createRelationship(extendedSubjectNode, atomicNounPredicateNode, atomicVerbPredicate, semanticData);
                 }
-                if (!"".equals(extendedVerbPredicate)) {
+                if (!extendedVerbPredicate.isEmpty()) {
                     createRelationship(atomicSubjectNode, atomicNounPredicateNode, extendedVerbPredicate, semanticData);
                     createRelationship(extendedSubjectNode, atomicNounPredicateNode, extendedVerbPredicate, semanticData);
                 }
@@ -231,10 +231,10 @@ public class DataImporterImpl implements DataImporter {
             if (atomicSubjectNode != null && extendedSubjectNode == null && atomicNounPredicateNode != null && extendedNounPredicateNode == null) {
                 String atomicVerbPredicate = semanticData.getAtomicVerbPredicate();
                 String extendedVerbPredicate = semanticData.getExtendedVerbPredicate();
-                if (!"".equals(atomicVerbPredicate)) {
+                if (!atomicVerbPredicate.isEmpty()) {
                     createRelationship(atomicSubjectNode, atomicNounPredicateNode, atomicVerbPredicate, semanticData);
                 }
-                if (!"".equals(extendedVerbPredicate)) {
+                if (!extendedVerbPredicate.isEmpty()) {
                     createRelationship(atomicSubjectNode, atomicNounPredicateNode, extendedVerbPredicate, semanticData);
                 }
             }
@@ -243,10 +243,10 @@ public class DataImporterImpl implements DataImporter {
             if (atomicSubjectNode != null && extendedSubjectNode == null && atomicNounPredicateNode == null && extendedNounPredicateNode != null) {
                 String atomicVerbPredicate = semanticData.getAtomicVerbPredicate();
                 String extendedVerbPredicate = semanticData.getExtendedVerbPredicate();
-                if (!"".equals(atomicVerbPredicate)) {
+                if (!atomicVerbPredicate.isEmpty()) {
                     createRelationship(atomicSubjectNode, extendedNounPredicateNode, atomicVerbPredicate, semanticData);
                 }
-                if (!"".equals(extendedVerbPredicate)) {
+                if (!extendedVerbPredicate.isEmpty()) {
                     createRelationship(atomicSubjectNode, extendedNounPredicateNode, extendedVerbPredicate, semanticData);
                 }
             }
@@ -255,10 +255,10 @@ public class DataImporterImpl implements DataImporter {
             if (atomicSubjectNode == null && extendedSubjectNode != null && atomicNounPredicateNode != null && extendedNounPredicateNode == null) {
                 String atomicVerbPredicate = semanticData.getAtomicVerbPredicate();
                 String extendedVerbPredicate = semanticData.getExtendedVerbPredicate();
-                if (!"".equals(atomicVerbPredicate)) {
+                if (!atomicVerbPredicate.isEmpty()) {
                     createRelationship(extendedSubjectNode, atomicNounPredicateNode, atomicVerbPredicate, semanticData);
                 }
-                if (!"".equals(extendedVerbPredicate)) {
+                if (!extendedVerbPredicate.isEmpty()) {
                     createRelationship(extendedSubjectNode, atomicNounPredicateNode, extendedVerbPredicate, semanticData);
                 }
             }
@@ -267,10 +267,10 @@ public class DataImporterImpl implements DataImporter {
             if (atomicSubjectNode == null && extendedSubjectNode != null && atomicNounPredicateNode == null && extendedNounPredicateNode != null) {
                 String atomicVerbPredicate = semanticData.getAtomicVerbPredicate();
                 String extendedVerbPredicate = semanticData.getExtendedVerbPredicate();
-                if (!"".equals(atomicVerbPredicate)) {
+                if (!atomicVerbPredicate.isEmpty()) {
                     createRelationship(extendedSubjectNode, extendedNounPredicateNode, atomicVerbPredicate, semanticData);
                 }
-                if (!"".equals(extendedVerbPredicate)) {
+                if (!extendedVerbPredicate.isEmpty()) {
                     createRelationship(extendedSubjectNode, extendedNounPredicateNode, extendedVerbPredicate, semanticData);
                 }
             }
@@ -287,13 +287,16 @@ public class DataImporterImpl implements DataImporter {
             relationship.setProperty("sentence", semanticData.getSentence());
             relationship.setProperty("wikiTopic", semanticData.getWikiTopic());
 
-            System.out.println("Nodes with relationship created: " + semanticData.getAtomicSubject() + " [ " + verbPredicate + " ] -> "
-                    + semanticData.getAtomicNounPredicate());
+            System.out.println("Nodes with relationship created: " + node1.getProperty("name") + " [ " + verbPredicate + " ] -> "
+                    + node2.getProperty("name"));
         }
     }
 
 
     private Node createNode(String nodeName) {
+        if (!containsAlphaNumericalChars(nodeName)) {
+            return null;
+        }
         Label label = Label.label(NODE_LABEL);
         Node node = null;
         node = graphSearcher.findNode(nodeName);
@@ -327,6 +330,10 @@ public class DataImporterImpl implements DataImporter {
             }
         }
         return false;
+    }
+
+    private boolean containsAlphaNumericalChars(String s) {
+        return s.matches("[A-Za-z0-9]+");
     }
 
 }
