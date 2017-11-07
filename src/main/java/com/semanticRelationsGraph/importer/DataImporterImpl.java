@@ -70,7 +70,7 @@ public class DataImporterImpl implements DataImporter {
                         atomicNounPredicate = removeDoubleQuotesEmptyString(split[5]);
                     }
                     if (split[6] != null && !split[6].isEmpty()) {
-                        atomicNounPredicate = removeDoubleQuotesEmptyString(split[5]);
+                        extendedNounPredicate = removeDoubleQuotesEmptyString(split[6]);
                     }
                     if (split[7] != null && !split[7].isEmpty()) {
                         sentence = removeDoubleQuotesEmptyString(split[7]);
@@ -83,7 +83,7 @@ public class DataImporterImpl implements DataImporter {
                     createNodesAndRelationship(semanticData);
                 }
                 numberOfRelationships++;
-                if (numberOfRelationships == 500000) {
+                if (numberOfRelationships == 200000) {
                     break;
                 }
                 System.out.println("Number of created relationships: " + numberOfRelationships);
